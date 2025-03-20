@@ -1,60 +1,22 @@
 openapi: 3.0.1
 info:
-  title: Teams API
-  description: API for carrying out Teams message-related functionality
+  title: Microsoft Teams API via Graph API
+  description: OpenAPI spec for Teams actions using Microsoft Graph API
   version: 1.0.0
 servers:
   - url: https://graph.microsoft.com/v1.0
 paths:
   /chats:
-    post:
-      summary: Create a new chat
-      operationId: createChat
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - chatType
-                - members
-              properties:
-                chatType:
-                  type: string
-                  example: oneOnOne
-                members:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - userOdataBind
-                    properties:
-                      @odata.type:
-                        type: string
-                        example: "#microsoft.graph.aadUserConversationMember"
-                      roles:
-                        type: array
-                        items:
-                          type: string
-                          example: owner
-                      userOdataBind:
-                        type: string
-                        example: "https://graph.microsoft.com/v1.0/users/{user-id}"
-      responses:
-        '201':
-          description: Chat created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chat'
-  /me/chats:
     get:
       summary: List current user's chats
       operationId: listUserChats
+      tags:
+        - Chats
+      security:
+        - bearerAuth: []
       responses:
         '200':
-          description: List of chats
+          description: A list of chats
           content:
             application/json:
               schema:
@@ -64,19 +26,63 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Chat'
-  /chats/{chat-id}/messages:
+    post:
+      summary: Create a new chat with a specific user
+      operationId: createChat
+      tags:
+        - Chats
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chatType:
+                  type: string
+                  enum: [oneOnOne]
+                members:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      '@odata.type':
+                        type: string
+                        example: "#microsoft.graph.aadUserConversationMember"
+                      roles:
+                        type: array
+                        items:
+                          type: string
+                          example: "owner"
+                      userId:
+                        type: string
+                        example: "{user-id}"
+      responses:
+        '201':
+          description: Chat created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+  /chats/{chatId}/messages:
     get:
-      summary: Get messages from a chat
+      summary: Get messages from a specific chat
       operationId: getChatMessages
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
       parameters:
-        - name: chat-id
+        - name: chatId
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: List of messages
+          description: List of messages in the chat
           content:
             application/json:
               schema:
@@ -87,10 +93,14 @@ paths:
                     items:
                       $ref: '#/components/schemas/Message'
     post:
-      summary: Send a message to a chat
-      operationId: sendMessageToChat
+      summary: Send a message to a specific chat
+      operationId: sendMessage
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
       parameters:
-        - name: chat-id
+        - name: chatId
           in: path
           required: true
           schema:
@@ -101,17 +111,12 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - body
               properties:
                 body:
                   type: object
-                  required:
-                    - content
                   properties:
                     content:
                       type: string
-                      example: Hello, this is a message!
       responses:
         '201':
           description: Message sent successfully
@@ -120,72 +125,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Message'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Chat:
       type: object
-      required:
-        - id
-        - chatType
-        - members
       properties:
         id:
           type: string
-          example: chat-id
         chatType:
           type: string
-          example: oneOnOne
-        members:
-          type: array
-          items:
-            type: object
-            required:
-              - userId
-            properties:
-              userId:
-                type: string
-                example: user-id
-              roles:
-                type: array
-                items:
-                  type: string
-                  example: owner
+        createdDateTime:
+          type: string
     Message:
       type: object
-      required:
-        - id
-        - body
-        - from
-        - createdDateTime
       properties:
         id:
           type: string
-          example: message-id
         body:
           type: object
-          required:
-            - content
           properties:
             content:
               type: string
-              example: Message content
-        from:
-          type: object
-          required:
-            - user
-          properties:
-            user:
-              type: object
-              required:
-                - id
-                - displayName
-              properties:
-                id:
-                  type: string
-                  example: user-id
-                displayName:
-                  type: string
-                  example: User Name
-        createdDateTime:
-          type: string
-          format: date-time
-          example: 2025-03-19T14:48:33Z
