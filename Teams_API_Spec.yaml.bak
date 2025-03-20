@@ -1,0 +1,243 @@
+openapi: 3.0.1
+info:
+  title: Teams API
+  description: API for carrying out Teams message related functionality
+  version: 1.0.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  /chats:
+    post:
+      summary: Create a new chat
+      operationId: createChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chatType:
+                  type: string
+                  example: oneOnOne
+                members:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      @odata.type:
+                        type: string
+                        example: "#microsoft.graph.aadUserConversationMember"
+                      roles:
+                        type: array
+                        items:
+                          type: string
+                          example: owner
+                      user@odata.bind:
+                        type: string
+                        example: "https://graph.microsoft.com/v1.0/users/{user-id}"
+      responses:
+        '201':
+          description: Chat created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: chat-id
+                  chatType:
+                    type: string
+                    example: oneOnOne
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                          example: user-id
+                        roles:
+                          type: array
+                          items:
+                            type: string
+                            example: owner
+  /me/chats:
+    get:
+      summary: List current user's chats
+      operationId: listUserChats
+      responses:
+        '200':
+          description: List of chats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: chat-id
+                        topic:
+                          type: string
+                          example: Chat Topic
+  /chats/{chat-id}/messages:
+    get:
+      summary: Get messages from a chat
+      operationId: getChatMessages
+      parameters:
+        - name: chat-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: message-id
+                        body:
+                          type: object
+                          properties:
+                            content:
+                              type: string
+                              example: Message content
+                        from:
+                          type: object
+                          properties:
+                            user:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: user-id
+                                displayName:
+                                  type: string
+                                  example: User Name
+                        createdDateTime:
+                          type: string
+                          format: date-time
+                          example: 2025-03-19T14:48:33Z
+    post:
+      summary: Send a message to a chat
+      operationId: sendMessageToChat
+      parameters:
+        - name: chat-id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      example: Hello, this is a message!
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: message-id
+                  body:
+                    type: object
+                    properties:
+                      content:
+                        type: string
+                        example: Hello, this is a message!
+                  from:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: user-id
+                          displayName:
+                            type: string
+                            example: User Name
+                  createdDateTime:
+                    type: string
+                    format: date-time
+                    example: 2025-03-19T14:48:33Z
+components:
+  schemas:
+    Chat:
+      type: object
+      properties:
+        id:
+          type: string
+          example: chat-id
+        chatType:
+          type: string
+          example: oneOnOne
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                example: user-id
+              roles:
+                type: array
+                items:
+                  type: string
+                  example: owner
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          example: message-id
+        body:
+          type: object
+          properties:
+            content:
+              type: string
+              example: Message content
+        from:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: user-id
+                displayName:
+                  type: string
+                  example: User Name
+        createdDateTime:
+          type: string
+          format: date-time
+          example: 2025-03-19T14:48:33Z

@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Teams API
-  description: API for carrying out Teams message related functionality
+  description: API for carrying out Teams message-related functionality
   version: 1.0.0
 servers:
   - url: https://graph.microsoft.com/v1.0
@@ -16,6 +16,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - chatType
+                - members
               properties:
                 chatType:
                   type: string
@@ -24,6 +27,8 @@ paths:
                   type: array
                   items:
                     type: object
+                    required:
+                      - userOdataBind
                     properties:
                       @odata.type:
                         type: string
@@ -33,7 +38,7 @@ paths:
                         items:
                           type: string
                           example: owner
-                      user@odata.bind:
+                      userOdataBind:
                         type: string
                         example: "https://graph.microsoft.com/v1.0/users/{user-id}"
       responses:
@@ -42,27 +47,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: chat-id
-                  chatType:
-                    type: string
-                    example: oneOnOne
-                  members:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        userId:
-                          type: string
-                          example: user-id
-                        roles:
-                          type: array
-                          items:
-                            type: string
-                            example: owner
+                $ref: '#/components/schemas/Chat'
   /me/chats:
     get:
       summary: List current user's chats
@@ -78,14 +63,7 @@ paths:
                   value:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          example: chat-id
-                        topic:
-                          type: string
-                          example: Chat Topic
+                      $ref: '#/components/schemas/Chat'
   /chats/{chat-id}/messages:
     get:
       summary: Get messages from a chat
@@ -107,33 +85,7 @@ paths:
                   value:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          example: message-id
-                        body:
-                          type: object
-                          properties:
-                            content:
-                              type: string
-                              example: Message content
-                        from:
-                          type: object
-                          properties:
-                            user:
-                              type: object
-                              properties:
-                                id:
-                                  type: string
-                                  example: user-id
-                                displayName:
-                                  type: string
-                                  example: User Name
-                        createdDateTime:
-                          type: string
-                          format: date-time
-                          example: 2025-03-19T14:48:33Z
+                      $ref: '#/components/schemas/Message'
     post:
       summary: Send a message to a chat
       operationId: sendMessageToChat
@@ -149,9 +101,13 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - body
               properties:
                 body:
                   type: object
+                  required:
+                    - content
                   properties:
                     content:
                       type: string
@@ -162,37 +118,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: message-id
-                  body:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                        example: Hello, this is a message!
-                  from:
-                    type: object
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                            example: user-id
-                          displayName:
-                            type: string
-                            example: User Name
-                  createdDateTime:
-                    type: string
-                    format: date-time
-                    example: 2025-03-19T14:48:33Z
+                $ref: '#/components/schemas/Message'
 components:
   schemas:
     Chat:
       type: object
+      required:
+        - id
+        - chatType
+        - members
       properties:
         id:
           type: string
@@ -204,6 +138,8 @@ components:
           type: array
           items:
             type: object
+            required:
+              - userId
             properties:
               userId:
                 type: string
@@ -215,21 +151,33 @@ components:
                   example: owner
     Message:
       type: object
+      required:
+        - id
+        - body
+        - from
+        - createdDateTime
       properties:
         id:
           type: string
           example: message-id
         body:
           type: object
+          required:
+            - content
           properties:
             content:
               type: string
               example: Message content
         from:
           type: object
+          required:
+            - user
           properties:
             user:
               type: object
+              required:
+                - id
+                - displayName
               properties:
                 id:
                   type: string
