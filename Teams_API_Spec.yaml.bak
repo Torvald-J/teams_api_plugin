@@ -26,46 +26,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Chat'
-    post:
-      summary: Create a new chat with a specific user
-      operationId: createChat
-      tags:
-        - Chats
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                chatType:
-                  type: string
-                  enum: [oneOnOne]
-                members:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      '@odata.type':
-                        type: string
-                        example: "#microsoft.graph.aadUserConversationMember"
-                      roles:
-                        type: array
-                        items:
-                          type: string
-                          example: "owner"
-                      userId:
-                        type: string
-                        example: "{user-id}"
-      responses:
-        '201':
-          description: Chat created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chat'
   /chats/{chatId}/messages:
     get:
       summary: Get messages from a specific chat
