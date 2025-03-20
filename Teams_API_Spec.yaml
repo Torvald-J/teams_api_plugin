@@ -3,6 +3,8 @@ info:
   title: Teams API
   description: API for carrying out Teams message related functionality
   version: 1.0.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
 paths:
   /chats:
     post:
